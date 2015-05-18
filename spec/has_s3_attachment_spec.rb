@@ -19,20 +19,20 @@ describe HasS3Attachment do
           }
         )
 
-        attr_accessor :s3_bucket, :s3_path
+        attr_accessor :s3_bucket_paths
       end.new
     end
 
     it 'generates attachment url' do
-      subject.s3_bucket = 'bucket-name'
-      subject.s3_path = 'path/to/file.png'
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = 'path/to/file.png'
 
       expect(subject.photo_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.png'
     end
 
     it 'removes attachment' do
-      subject.s3_bucket = 'bucket-name'
-      subject.s3_path = 'path/to/file.txt'
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = 'path/to/file.txt'
 
       stub_request(:delete, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt")
 
@@ -40,8 +40,8 @@ describe HasS3Attachment do
     end
 
     it "provides attachment's content stream" do
-      subject.s3_bucket = 'bucket-name'
-      subject.s3_path = 'path/to/file.txt'
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = 'path/to/file.txt'
 
       stub_request(:get, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt").
         to_return(:body => "dummy content")
@@ -67,20 +67,20 @@ describe HasS3Attachment do
           host_alias: 'cdn-example.com'
         )
 
-        attr_accessor :s3_bucket, :s3_path
+        attr_accessor :s3_bucket_paths
       end.new
     end
 
     it 'generates attachment url, ssl on' do
-      subject.s3_bucket = 'bucket-name'
-      subject.s3_path = '/path/to/file.png'
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = '/path/to/file.png'
 
       expect(subject.photo_url).to eq 'https://cdn-example.com/path/to/file.png'
     end
 
     it 'generates attachment url, ssl off' do
-      subject.s3_bucket = 'bucket-name'
-      subject.s3_path = '/path/to/file.txt'
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = '/path/to/file.txt'
 
       expect(subject.photo_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
     end

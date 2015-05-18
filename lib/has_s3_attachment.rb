@@ -11,6 +11,8 @@ module HasS3Attachment
       @host_alias = options[:host_alias]
 
       define_method("#{attachment_name}_url".to_sym) do |*args|
+        s3_bucket = send :"#{attachment_name}_s3_bucket"
+        s3_path = send :"#{attachment_name}_s3_path"
         ssl = args[0] && args[0].key?(:ssl) ? args[0][:ssl] : true
         host_alias = self.class.host_alias
         if host_alias
@@ -29,14 +31,40 @@ module HasS3Attachment
 
 
       define_method("delete_#{attachment_name}".to_sym) do
+        s3_bucket = send :"#{attachment_name}_s3_bucket"
+        s3_path = send :"#{attachment_name}_s3_path"
         @s3.bucket(s3_bucket).object(s3_path).delete
       end
 
-      define_method("open_#{attachment_name}".to_sym) do |&block|
+      define_method(:"open_#{attachment_name}") do |&block|
         url = send :"#{attachment_name}_url"
         open(url) do |f|
           block.call f
         end
+      end
+
+      define_method(:"#{attachment_name}_s3_bucket=") do |bucket|
+        hash = s3_bucket_paths ? JSON.parse(s3_bucket_paths) : Hash.new
+        hash["#{attachment_name}"] = {} unless hash.key? "#{attachment_name}"
+        hash["#{attachment_name}"]['bucket'] = bucket
+        self.s3_bucket_paths = JSON.generate(hash)
+      end
+
+      define_method(:"#{attachment_name}_s3_path=") do |path|
+        hash = s3_bucket_paths ? JSON.parse(s3_bucket_paths) : Hash.new
+        hash["#{attachment_name}"] = {} unless hash.key? "#{attachment_name}"
+        hash["#{attachment_name}"]['path'] = path
+        self.s3_bucket_paths = JSON.generate(hash)
+      end
+
+      define_method(:"#{attachment_name}_s3_bucket") do
+        hash = s3_bucket_paths ? JSON.parse(s3_bucket_paths) : Hash.new
+        hash["#{attachment_name}"]['bucket'] if hash.key? "#{attachment_name}"
+      end
+
+      define_method(:"#{attachment_name}_s3_path") do
+        hash = s3_bucket_paths ? JSON.parse(s3_bucket_paths) : Hash.new
+        hash["#{attachment_name}"]['path'] if hash.key? "#{attachment_name}"
       end
     end
   end
