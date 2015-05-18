@@ -52,4 +52,37 @@ describe HasS3Attachment do
       end
     end
   end
+
+  describe 'with host alias' do
+    subject do
+      Class.new do
+        include HasS3Attachment
+
+        has_s3_attachment(
+          s3_options: {
+            region: 'us-west-2',
+            key: 'key-xxx',
+            secret: 'secret-xxx'
+          },
+          host_alias: 'cdn-example.com'
+        )
+
+        attr_accessor :s3_bucket, :s3_path
+      end.new
+    end
+
+    it 'generates attachment url, ssl on' do
+      subject.s3_bucket = 'bucket-name'
+      subject.s3_path = '/path/to/file.txt'
+
+      expect(subject.attachment_url).to eq 'https://cdn-example.com/path/to/file.txt'
+    end
+
+    it 'generates attachment url, ssl off' do
+      subject.s3_bucket = 'bucket-name'
+      subject.s3_path = '/path/to/file.txt'
+
+      expect(subject.attachment_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
+    end
+  end
 end
