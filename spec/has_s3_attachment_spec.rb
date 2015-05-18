@@ -11,6 +11,7 @@ describe HasS3Attachment do
         include HasS3Attachment
 
         has_s3_attachment(
+          :photo,
           s3_options: {
             region: 'us-west-2',
             key: 'key-xxx',
@@ -24,9 +25,9 @@ describe HasS3Attachment do
 
     it 'generates attachment url' do
       subject.s3_bucket = 'bucket-name'
-      subject.s3_path = 'path/to/file.txt'
+      subject.s3_path = 'path/to/file.png'
 
-      expect(subject.attachment_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt'
+      expect(subject.photo_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.png'
     end
 
     it 'removes attachment' do
@@ -35,9 +36,7 @@ describe HasS3Attachment do
 
       stub_request(:delete, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt")
 
-      subject.delete_attachment
-
-      expect(subject.attachment_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt'
+      subject.delete_photo
     end
 
     it "provides attachment's content stream" do
@@ -47,7 +46,7 @@ describe HasS3Attachment do
       stub_request(:get, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt").
         to_return(:body => "dummy content")
 
-      subject.open_attachment do |f|
+      subject.open_photo do |f|
         expect(f.read).to eq 'dummy content'
       end
     end
@@ -59,6 +58,7 @@ describe HasS3Attachment do
         include HasS3Attachment
 
         has_s3_attachment(
+          :photo,
           s3_options: {
             region: 'us-west-2',
             key: 'key-xxx',
@@ -73,16 +73,16 @@ describe HasS3Attachment do
 
     it 'generates attachment url, ssl on' do
       subject.s3_bucket = 'bucket-name'
-      subject.s3_path = '/path/to/file.txt'
+      subject.s3_path = '/path/to/file.png'
 
-      expect(subject.attachment_url).to eq 'https://cdn-example.com/path/to/file.txt'
+      expect(subject.photo_url).to eq 'https://cdn-example.com/path/to/file.png'
     end
 
     it 'generates attachment url, ssl off' do
       subject.s3_bucket = 'bucket-name'
       subject.s3_path = '/path/to/file.txt'
 
-      expect(subject.attachment_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
+      expect(subject.photo_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
     end
   end
 end
