@@ -25,14 +25,20 @@ describe HasS3Attachment do
 
     it 'generates attachment url' do
       subject.photo_s3_bucket = 'bucket-name'
-      subject.photo_s3_path = 'path/to/file.png'
+      subject.photo_s3_path = '/path/to/file.png'
 
       expect(subject.photo_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.png'
     end
 
+    it 'raises error if path is not absolute' do
+      expect do
+        subject.photo_s3_path = 'path/to/file.png'
+      end.to raise_error('s3_path must be absolute and start with "/"')
+    end
+
     it 'removes attachment' do
       subject.photo_s3_bucket = 'bucket-name'
-      subject.photo_s3_path = 'path/to/file.txt'
+      subject.photo_s3_path = '/path/to/file.txt'
 
       stub_request(:delete, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt")
 
@@ -41,7 +47,7 @@ describe HasS3Attachment do
 
     it "provides attachment's content stream" do
       subject.photo_s3_bucket = 'bucket-name'
-      subject.photo_s3_path = 'path/to/file.txt'
+      subject.photo_s3_path = '/path/to/file.txt'
 
       stub_request(:get, "https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.txt").
         to_return(:body => "dummy content")
@@ -85,4 +91,68 @@ describe HasS3Attachment do
       expect(subject.photo_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
     end
   end
+
+  describe 'dynamic paths attributes' do
+    it 'raises NameError if no s3_bucket_paths attr' do
+      obj = Class.new do
+        include HasS3Attachment
+
+        has_s3_attachment(
+          :photo,
+          s3_options: {
+            region: 'us-west-2',
+            key: 'key-xxx',
+            secret: 'secret-xxx'
+          },
+          host_alias: 'cdn-example.com'
+        )
+      end.new
+
+      expect do
+        obj.photo_s3_bucket = 'bucket-name'
+      end.to raise_error(NameError, 'You must create model attribute "s3_bucket_paths" of type string in order to make has_s3_attachment work')
+      expect do
+        obj.photo_s3_path = '/path/to/file.png'
+      end.to raise_error(NameError, 'You must create model attribute "s3_bucket_paths" of type string in order to make has_s3_attachment work')
+    end
+  end
+  # WIP add support of multiple attachments
+
+  # describe 'multiple attachments' do
+  #   it 'creates multiple attachments' do
+  #     obj = Class.new do
+  #       include HasS3Attachment
+
+  #       has_s3_attachment(
+  #         :photo,
+  #         s3_options: {
+  #           region: 'us-west-2',
+  #           key: 'key-xxx',
+  #           secret: 'secret-xxx'
+  #         },
+  #         host_alias: 'cdn-example.com'
+  #       )
+
+  #       has_s3_attachment(
+  #         :file,
+  #         s3_options: {
+  #           region: 'us-west-2',
+  #           key: 'key-xxx',
+  #           secret: 'secret-xxx'
+  #         }
+  #       )
+
+  #       attr_accessor :s3_bucket_paths
+  #     end.new
+
+  #     obj.photo_s3_bucket = 'bucket-name'
+  #     obj.photo_s3_path = '/path/to/file.png'
+
+  #     obj.file_s3_bucket = 'bucket-name1'
+  #     obj.file_s3_path = 'path/to/file.txt'
+
+  #     expect(obj.photo_url).to eq('https://cdn-example.com/path/to/file.png')
+  #     expect(obj.file_url).to eq('https://bucket-name1.s3-us-west-2.amazonaws.com/path/to/file.txt')
+  #   end
+  # end
 end
