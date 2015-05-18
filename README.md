@@ -1,8 +1,43 @@
 # HasS3Attachment
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/has_s3_attachment`. To experiment with that code, run `bin/console` for an interactive prompt.
+A simple gem, which manages Rails model file attachments hosted on *aws s3*.
 
-TODO: Delete this and the text above, and describe your gem
+## Usage
+Typical use case is when you have single paged web app backed by Rails app,
+and you upload your attachments right from the browser to **s3** via `CORS` -
+as a result you have only location of your file on **s3**. Then you may wanna link this attachment to some model in your app:
+
+```ruby
+class VideoReport < ActiveRecord::Base
+  include HasS3Attachment
+
+  has_s3_attachment(
+    :video,
+      s3_options: {
+        region: 'us-west-2',
+        key: 'key-xxx',
+        secret: 'secret-xxx'
+      },
+      host_alias: 'cdn-example.com'
+  )
+end
+```
+To get it working you must have `s3_bucket_paths` attr of type `string` declared on your model.
+Set **s3** location on an instance of your model as following (to associate your model with attachment):
+```ruby
+video_report.video_s3_bucket = 'your_bucket'
+video_report.video_s3_path = '/path/to/file.mp4'
+```
+Then you'll be able to to call the next methods:
+```ruby
+video_report.video_url # returns full attachment url
+video_report.delete_video # removes attachment from s3, may be use in conjunction with `before_destroy` ActiveRecord callback
+video_report.open_video do |f|
+  # f is an input stream of your attachment
+end
+```
+## WIP
+* add the support of multiple attachments
 
 ## Installation
 
@@ -19,10 +54,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install has_s3_attachment
-
-## Usage
-
-TODO: Write usage instructions here
 
 ## Development
 
