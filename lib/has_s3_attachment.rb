@@ -69,7 +69,7 @@ module HasS3Attachment
     end
   end
 
-  def initialize
+  def initialize(*args)
     super
     s3_options = self.class.s3_options
     if s3_options
