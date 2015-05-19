@@ -26,7 +26,7 @@ module HasS3Attachment
 
           url_str
         else
-          @s3.bucket(s3_bucket).object(s3_path[1..-1]).public_url
+          @s3.bucket(s3_bucket).object(s3_path[1..-1]).public_url if s3_path && s3_bucket
         end
       end
 
