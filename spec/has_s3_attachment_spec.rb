@@ -56,6 +56,31 @@ describe HasS3Attachment do
         expect(f.read).to eq 'dummy content'
       end
     end
+
+    # FIXME: add tests
+    # it 'calls after find' do
+    #   klass = Class.new do
+    #     def after_find(arg)
+    #       puts 'here'
+    #     end
+    #   end
+
+    #   obj = klass.new do
+    #     include HasS3Attachment
+
+    #     has_s3_attachment(
+    #       :photo,
+    #       s3_options: {
+    #         region: 'us-west-2',
+    #         key: 'key-xxx',
+    #         secret: 'secret-xxx'
+    #       }
+    #     )
+    #     attr_accessor :s3_bucket_paths
+    #   end
+
+    #   obj
+    # end
   end
 
   describe 'with host alias' do

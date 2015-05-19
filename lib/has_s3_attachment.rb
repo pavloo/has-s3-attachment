@@ -1,6 +1,7 @@
 require "has_s3_attachment/version"
 require "aws-sdk"
 require "open-uri"
+require "json"
 
 module HasS3Attachment
 
@@ -67,19 +68,13 @@ module HasS3Attachment
     class << base
       attr_reader :s3_options, :host_alias, :attachment_name
     end
+
+    base.after_find :init if base.respond_to?(:after_find)
   end
 
   def initialize(*args)
     super
-    s3_options = self.class.s3_options
-    if s3_options
-      @s3 = Aws::S3::Resource.new(
-        region: s3_options[:region],
-        credentials: Aws::Credentials.new(s3_options[:key], s3_options[:secret])
-      )
-    else
-      @s3 = Aws::S3::Client.new
-    end
+    init
   end
 
   private
@@ -102,5 +97,17 @@ module HasS3Attachment
       raise NameError, 'You must create model attribute "s3_bucket_paths" of type string in order to make has_s3_attachment work'
     end
     hash["#{name}"][type.to_s] if hash.key? "#{name}"
+  end
+
+  def init
+    s3_options = self.class.s3_options
+    if s3_options
+      @s3 = Aws::S3::Resource.new(
+        region: s3_options[:region],
+        credentials: Aws::Credentials.new(s3_options[:key], s3_options[:secret])
+      )
+    else
+      @s3 = Aws::S3::Client.new
+    end
   end
 end
