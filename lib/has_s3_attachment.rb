@@ -8,13 +8,14 @@ module HasS3Attachment
   module ClassMethods
     def has_s3_attachment(attachment_name, options)
       @attachment_name = attachment_name
-      @s3_options = options[:s3_options]
-      @host_alias = options[:host_alias]
+      set_s3_options(attachment_name, options[:s3_options])
+      host_alias = options[:host_alias]
 
       define_method("#{attachment_name}_url".to_sym) do |*args|
         s3_bucket = send :"#{attachment_name}_s3_bucket"
         s3_path = send :"#{attachment_name}_s3_path"
-        host_alias = self.class.host_alias
+        host = send :"#{attachment_name}_host_alias"
+        host_alias = host || host_alias
         if host_alias
           ssl = args[0] && args[0].key?(:ssl) ? args[0][:ssl] : true
           url_str = URI::HTTP.build(
@@ -26,7 +27,7 @@ module HasS3Attachment
 
           url_str
         else
-          @s3.bucket(s3_bucket).object(s3_path[1..-1]).public_url if s3_path && s3_bucket
+          @s3[attachment_name].bucket(s3_bucket).object(s3_path[1..-1]).public_url if s3_path && s3_bucket
         end
       end
 
@@ -34,7 +35,7 @@ module HasS3Attachment
       define_method("delete_#{attachment_name}".to_sym) do
         s3_bucket = send :"#{attachment_name}_s3_bucket"
         s3_path = send :"#{attachment_name}_s3_path"
-        @s3.bucket(s3_bucket).object(s3_path[1..-1]).delete
+        @s3[attachment_name].bucket(s3_bucket).object(s3_path[1..-1]).delete
       end
 
       define_method(:"open_#{attachment_name}") do |&block|
@@ -46,6 +47,10 @@ module HasS3Attachment
 
       define_method(:"#{attachment_name}_s3_bucket=") do |bucket|
         set_s3_paths(attachment_name, :bucket, bucket)
+      end
+
+      define_method(:"#{attachment_name}_host_alias=") do |host_alias|
+        set_s3_paths(attachment_name, :host_alias, host_alias)
       end
 
       define_method(:"#{attachment_name}_s3_path=") do |path|
@@ -60,6 +65,15 @@ module HasS3Attachment
       define_method(:"#{attachment_name}_s3_path") do
         get_s3_paths(attachment_name, :path)
       end
+
+      define_method(:"#{attachment_name}_host_alias") do
+        get_s3_paths(attachment_name, :host_alias)
+      end
+    end
+
+    def set_s3_options(attachment_name, options)
+      @s3_options = {} unless @s3_options
+      @s3_options[attachment_name] = options
     end
   end
 
@@ -101,13 +115,17 @@ module HasS3Attachment
 
   def init
     s3_options = self.class.s3_options
-    if s3_options
-      @s3 = Aws::S3::Resource.new(
-        region: s3_options[:region],
-        credentials: Aws::Credentials.new(s3_options[:key], s3_options[:secret])
-      )
-    else
-      @s3 = Aws::S3::Client.new
+    @s3 = {}
+    s3_options.keys.each do |name|
+      options = s3_options[name]
+      if options
+        @s3[name] = Aws::S3::Resource.new(
+          region: options[:region],
+          credentials: Aws::Credentials.new(options[:key], options[:secret])
+        )
+      else
+        @s3[name] = Aws::S3::Client.new
+      end
     end
   end
 end

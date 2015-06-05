@@ -115,6 +115,14 @@ describe HasS3Attachment do
 
       expect(subject.photo_url(ssl: false)).to eq 'http://cdn-example.com/path/to/file.txt'
     end
+
+    it 'overrides global host_alias' do
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = '/path/to/file.txt'
+      subject.photo_host_alias = 'cdn-example-overriden.com'
+
+      expect(subject.photo_url).to eq 'https://cdn-example-overriden.com/path/to/file.txt'
+    end
   end
 
   describe 'dynamic paths attributes' do
@@ -141,43 +149,48 @@ describe HasS3Attachment do
       end.to raise_error(NameError, 'You must create model attribute "s3_bucket_paths" of type string in order to make has_s3_attachment work')
     end
   end
-  # WIP add support of multiple attachments
 
-  # describe 'multiple attachments' do
-  #   it 'creates multiple attachments' do
-  #     obj = Class.new do
-  #       include HasS3Attachment
+  describe 'multiple attachments' do
+    it 'creates multiple attachments' do
+      obj = Class.new do
+        include HasS3Attachment
 
-  #       has_s3_attachment(
-  #         :photo,
-  #         s3_options: {
-  #           region: 'us-west-2',
-  #           key: 'key-xxx',
-  #           secret: 'secret-xxx'
-  #         },
-  #         host_alias: 'cdn-example.com'
-  #       )
+        has_s3_attachment(
+          :photo,
+          s3_options: {
+            region: 'us-west-2',
+            key: 'key-xxx',
+            secret: 'secret-xxx'
+          },
+          host_alias: 'cdn-example.com'
+        )
 
-  #       has_s3_attachment(
-  #         :file,
-  #         s3_options: {
-  #           region: 'us-west-2',
-  #           key: 'key-xxx',
-  #           secret: 'secret-xxx'
-  #         }
-  #       )
+        has_s3_attachment(
+          :file,
+          s3_options: {
+            region: 'us-west-1',
+            key: 'key-xxx1',
+            secret: 'secret-xxx'
+          }
+        )
 
-  #       attr_accessor :s3_bucket_paths
-  #     end.new
+        attr_accessor :s3_bucket_paths
+      end.new
 
-  #     obj.photo_s3_bucket = 'bucket-name'
-  #     obj.photo_s3_path = '/path/to/file.png'
+      obj.photo_s3_bucket = 'bucket-name'
+      obj.photo_s3_path = '/path/to/file.png'
 
-  #     obj.file_s3_bucket = 'bucket-name1'
-  #     obj.file_s3_path = 'path/to/file.txt'
+      obj.file_s3_bucket = 'bucket-name1'
+      obj.file_s3_path = '/path/to/file.txt'
 
-  #     expect(obj.photo_url).to eq('https://cdn-example.com/path/to/file.png')
-  #     expect(obj.file_url).to eq('https://bucket-name1.s3-us-west-2.amazonaws.com/path/to/file.txt')
-  #   end
-  # end
+      expect(obj.photo_url).to eq('https://cdn-example.com/path/to/file.png')
+      expect(obj.file_url).to eq('https://bucket-name1.s3-us-west-1.amazonaws.com/path/to/file.txt')
+
+      stub_request(:delete, 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file.png')
+      stub_request(:delete, 'https://bucket-name1.s3-us-west-1.amazonaws.com/path/to/file.txt')
+
+      obj.delete_photo
+      obj.delete_file
+    end
+  end
 end
