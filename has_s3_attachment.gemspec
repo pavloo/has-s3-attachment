@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["posadchiy@gmail.com"]
 
   spec.summary       = %q{Gently wraps you s3 resource urls into ActiveModel::Record}
-  spec.description   = %q{Write a longer description or delete this line.}
+  spec.description   = %q{Gently wraps you s3 resource urls into ActiveModel::Record}
   spec.homepage      = "http://github.com/pavloo/has_s3_attachment"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
