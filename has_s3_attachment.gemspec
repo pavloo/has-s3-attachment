@@ -6,20 +6,12 @@ require 'has_s3_attachment/version'
 Gem::Specification.new do |spec|
   spec.name          = "has_s3_attachment"
   spec.version       = HasS3Attachment::VERSION
-  spec.authors       = ["posadchiy"]
+  spec.authors       = ["Pavlo Osadchyi"]
   spec.email         = ["posadchiy@gmail.com"]
 
-  spec.summary       = %q{Write a short summary, because Rubygems requires one.}
+  spec.summary       = %q{Gently wraps you s3 resource urls into ActiveModel::Record}
   spec.description   = %q{Write a longer description or delete this line.}
-  spec.homepage      = "http://github.com/sol1dus/has_s3_attachment"
-
-  # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
-  # delete this section to allow pushing this gem to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "Set to 'http://mygemserver.com'"
-  else
-    raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
-  end
+  spec.homepage      = "http://github.com/pavloo/has_s3_attachment"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"

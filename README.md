@@ -31,13 +31,35 @@ video_report.video_s3_path = '/path/to/file.mp4'
 Then you'll be able to to call the next methods:
 ```ruby
 video_report.video_url # returns full attachment url
-video_report.delete_video # removes attachment from s3, may be use in conjunction with `before_destroy` ActiveRecord callback
+video_report.delete_video # removes attachment from s3, may be used in conjunction with `before_destroy` ActiveRecord callback
 video_report.open_video do |f|
   # f is an input stream of your attachment
 end
 ```
-## WIP
-* add the support of multiple attachments
+## Multiple attachments, one model
+You can add multiple attachments to your model like this:
+```ruby
+class User < ActiveRecord::Base
+  has_s3_attachment(
+    :photo,
+    s3_options: {
+      region: 'us-west-2',
+      key: 'key-xxx',
+      secret: 'secret-xxx'
+    },
+    host_alias: 'cdn-example.com'
+  )
+
+  has_s3_attachment(
+    :document,
+    s3_options: {
+      region: 'us-west-1',
+      key: 'key-xxx1',
+      secret: 'secret-xxx'
+    }
+  )
+end
+```
 
 ## Installation
 
@@ -63,7 +85,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/has_s3_attachment/fork )
+1. Fork it ( https://github.com/pavloo/has_s3_attachment/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
