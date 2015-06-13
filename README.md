@@ -1,4 +1,4 @@
-# HasS3Attachment
+# HasS3Attachment [![Gem Version](https://badge.fury.io/rb/has_s3_attachment.svg)](http://badge.fury.io/rb/has_s3_attachment)
 
 A simple gem, which manages Rails model file attachments hosted on *aws s3*.
 
