@@ -14,6 +14,7 @@ module HasS3Attachment
       define_method("#{attachment_name}_url".to_sym) do |*args|
         s3_bucket = send :"#{attachment_name}_s3_bucket"
         s3_path = send :"#{attachment_name}_s3_path"
+        return '' unless s3_path
         host = send :"#{attachment_name}_host_alias"
         host_alias = host || host_alias
         if host_alias
@@ -54,6 +55,7 @@ module HasS3Attachment
       end
 
       define_method(:"#{attachment_name}_s3_path=") do |path|
+        return unless path
         fail 's3_path must be absolute and start with "/"' unless path.start_with?('/')
         set_s3_paths(attachment_name, :path, path)
       end

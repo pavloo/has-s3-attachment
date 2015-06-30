@@ -37,6 +37,13 @@ describe HasS3Attachment do
       expect(subject.photo_url).to eq 'https://bucket-name.s3-us-west-2.amazonaws.com/path/to/file%20file%20png'
     end
 
+    it 'generates attachment url, s3_path is nil' do
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = nil
+
+      expect(subject.photo_url).to eq ''
+    end
+
     it 'raises error if path is not absolute' do
       expect do
         subject.photo_s3_path = 'path/to/file.png'
