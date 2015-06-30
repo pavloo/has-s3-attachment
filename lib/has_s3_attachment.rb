@@ -23,7 +23,7 @@ module HasS3Attachment
             path: URI.escape(s3_path)
           ).to_s
 
-          url_str.gsub!(/http/, 'https') if ssl
+          url_str.gsub!(/http/, 'https') if ssl && url_str
 
           url_str
         else
