@@ -123,6 +123,13 @@ describe HasS3Attachment do
       expect(subject.photo_url).to eq 'https://cdn-example.com/path/to/file.png'
     end
 
+    it 'generates attachment url, [] chars' do
+      subject.photo_s3_bucket = 'bucket-name'
+      subject.photo_s3_path = '/path/to/[file].png'
+
+      expect(subject.photo_url).to eq 'https://cdn-example.com/path/to/%5Bfile%5D.png'
+    end
+
     it 'generates attachment url, ssl off' do
       subject.photo_s3_bucket = 'bucket-name'
       subject.photo_s3_path = '/path/to/file.txt'

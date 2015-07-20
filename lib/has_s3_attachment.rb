@@ -21,7 +21,7 @@ module HasS3Attachment
           ssl = args[0] && args[0].key?(:ssl) ? args[0][:ssl] : true
           url_str = URI::HTTP.build(
             host: host_alias,
-            path: URI.escape(s3_path)
+            path: URI.escape(s3_path, '[]')
           ).to_s
 
           url_str.gsub!(/http/, 'https') if ssl && url_str
